@@ -1,0 +1,4 @@
+beautifulsoup4==4.11.1
+google-api-python-client==2.64.0
+googletrans==3.1.0a0
+python-dotenv==0.21.0
