@@ -432,6 +432,12 @@ def video_comments(video_id):
 		cur.execute(query)
 		conn.commit()
 
+	replies_value=pd.read_sql(f'''SELECT value from public.replies where video_id='{video_id}' ''', con=conn)
+	comments_value=pd.read_sql(f'''SELECT value from public.comments where video_id='{video_id}' ''', con=conn)
+	final_data = pd.concat([replies_value, comments_value], axis=0).values.tolist()
+	print(final_data)
+	uniques, counts = np.unique(final_data, return_counts=True)
+	print(counts)
 	query = f"""update public.videos set extremely_happy='{counts[0]}', happy='{counts[1]}' , sad='{counts[2]}' ,neutral='{counts[3]}' ,angry='{counts[4]}' where video_id='{video_id}'"""
 	cur.execute(query)
 	conn.commit()
@@ -442,12 +448,5 @@ def video_comments(video_id):
 	
 
 if __name__ == "__main__":
-	# youtube_search_keyword('BE Computer Science', max_results = 7)
 	youtube_title_description(video_ids)
-	# video_request=youtube_object.videos().list(
-	# part='snippet,statistics',
-	# id="iSQdbXcAd20"
-	# )
-	# video_response = video_request.execute()
-	# print("\n\n\n",video_response)
 	

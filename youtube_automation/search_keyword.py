@@ -118,10 +118,4 @@ def video_comments(video_id):
 
 if __name__ == "__main__":
 	youtube_search_keyword('BE Computer Science', max_results = 7)
-	# video_request=youtube_object.videos().list(
-	# part='snippet,statistics',
-	# id="iSQdbXcAd20"
-	# )
-	# video_response = video_request.execute()
-	# print("\n\n\n",video_response)
 	
