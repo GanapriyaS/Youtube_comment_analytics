@@ -79,8 +79,6 @@ def youtube_title_description(video_ids):
 			print("Not")
 
 		video_comments(video_id)
-		
-
 
 		cur.close()
 		conn.close()
@@ -297,7 +295,7 @@ def word_embedding(texts):
 
 
 def model_predict(data):
-	model = load_model("sentiment_analysis.h5")
+	model = load_model("sentiment_analysis_model.h5")
 	y_pred = model.predict(data)
 	y_pred_class = np.argmax(y_pred,axis=1)
 	unique = np.array(np.unique(y_pred_class,return_counts=True)).T
@@ -342,7 +340,7 @@ def video_comments(video_id):
 				cur.execute(query)
 				print("comment insert")
 				conn.commit()
-			elif(diffretiation.total_seconds()//60<60):
+			elif(diffretiation.total_seconds()//60<3000):
 				query = f"""update public.comments set content='{comment}' where comment_id='{comment_id}'"""
 				cur.execute(query)
 				conn.commit()
@@ -372,8 +370,8 @@ def video_comments(video_id):
 						cur.execute(query)
 						print("reply insert")
 						conn.commit()
-					elif(reply_diffretiation.total_seconds()//60<60):
-						query = f"""update public.replies set content='{reply_content}' where comment_id='{reply_id}'"""
+					elif(reply_diffretiation.total_seconds()//60<3000):
+						query = f"""update public.replies set content='{reply_content}' where reply_id='{reply_id}'"""
 						cur.execute(query)
 						conn.commit()
 						print("reply update")
@@ -438,7 +436,7 @@ def video_comments(video_id):
 	print(final_data)
 	uniques, counts = np.unique(final_data, return_counts=True)
 	print(counts)
-	query = f"""update public.videos set extremely_happy='{counts[0]}', happy='{counts[1]}' , sad='{counts[2]}' ,neutral='{counts[3]}' ,angry='{counts[4]}' where video_id='{video_id}'"""
+	query = f"""update public.videos set extremely_happy='{counts[0]}', happy='{counts[1]}' , sad='{counts[3]}' ,neutral='{counts[2]}' ,angry='{counts[4]}' where video_id='{video_id}'"""
 	cur.execute(query)
 	conn.commit()
 	

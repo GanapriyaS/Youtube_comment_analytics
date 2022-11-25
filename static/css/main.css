@@ -208,6 +208,15 @@ section {
 	font-size: 1em;
 }
 
+.input__container select {
+	width: 100%;
+	border: none;
+	border-bottom: 1px solid lightgray;
+	color: gray;
+	font-size: 1em;
+}
+
+
 .comments p,
 .comments a {
 	margin-left: 4.5em;

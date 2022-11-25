@@ -21,10 +21,22 @@
                 </div>
                 <div class="search">
                     <form action="http://localhost:5000/" method="POST">
-                        <input type="text" name="search" id="search__input" placeholder="Search">
-                        <a href="#">
+                        <!-- <input type="text" name="query" id="search__input" placeholder="Search"> -->
+                       <div style="display: flex;">
+                        <select name="query" id="search__input" style="width: 40vw;">
+                            <option value="GCT" selected="selected">Make a choice</option>
+                            <option value="GCT">GCT</option>
+                            <option value="Gate">GATE</option>
+                            <option value="BE">BE CSE</option>
+                          </select>
+                        <!-- <button type="submit">
                             <img src="static/img/header/search.png" alt="Search Icon" class="search__icon">
-                        </a>
+                        </button> -->
+                        
+                        <!-- <input type="submit"> -->
+  <button id="search__input"  style="width: 10vw;">Search</button>
+                    </div>
+                  
                     </form>
                 </div>
                 <div class="header__icons header__logo">
@@ -74,11 +86,11 @@
                                 </thead>
                                 <tbody>
                                   <tr>
-                                    <th scope="row">{{dict_item["counts"][0]}}</th>
-                                    <td>{{dict_item["counts"][1]}}</td>
-                                    <td>{{dict_item["counts"][2]}}</td>
-                                    <td>{{dict_item["counts"][3]}}</td>
-                                    <td>{{dict_item["counts"][4]}}</td>
+                                    <th scope="row">{{dict_item["counts"][0]}}%</th>
+                                    <td>{{dict_item["counts"][1]}}%</td>
+                                    <td>{{dict_item["counts"][2]}}%</td>
+                                    <td>{{dict_item["counts"][3]}}%</td>
+                                    <td>{{dict_item["counts"][4]}}%</td>
                                   </tr>
                                 </tbody>
                               </table>
