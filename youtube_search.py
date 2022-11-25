@@ -22,7 +22,7 @@ def youtube_search_keyword(query, max_results):
 	
 # 	# calling the search.list method to
 # 	# retrieve youtube search results
-	search_keyword = youtube_object.search().list(q = query, part = "id, snippet", maxResults = max_results).execute()
+	search_keyword = youtube_object.search().list(q = query, part = "id, snippet", maxResults = max_results+1).execute()
 	
 	# extracting the results from search response
 	results = search_keyword.get("items", [])
@@ -39,7 +39,7 @@ def youtube_search_keyword(query, max_results):
 		# video result object
 		if result['id']['kind'] == "youtube#video":
 			videos.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"],result["id"]["videoId"], result['snippet']['description'],result['snippet']['thumbnails']['default']['url']))
-
+			video_comments(result["id"]["videoId"])
 # 		# playlist result object
 # 		elif result['id']['kind'] == "youtube# playlist":
 # 			playlists.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"],
@@ -71,32 +71,35 @@ def video_comments(video_id):
 
 	# iterate video response
 	while video_response:
-		
+		# print(video_response)
 		# extracting required info
 		# from each result object
+		print(len(video_response['items']))
 		for item in video_response['items']:
-			
 			# Extracting comments
 			comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
-			
+			updated_at= item['snippet']['topLevelComment']['snippet']['updatedAt']
+			print(updated_at)
 			# counting number of reply of comment
 			replycount = item['snippet']['totalReplyCount']
 
 			# if reply is there
 			if replycount>0:
+				print(item)
 				
 				# iterate through all reply
 				for reply in item['replies']['comments']:
 					
 					# Extract reply
 					reply = reply['snippet']['textDisplay']
-					
+					print(reply['snippet']['updatedAt'])
 					# Store reply is list
 					replies.append(reply)
+					# print(reply)
 
-			soup = BeautifulSoup(comment)
+			soup = BeautifulSoup(comment,features="html.parser")
             
-			print(soup.get_text('\n'), replies, end = '\n\n')
+			# print(soup.get_text('\n'), replies, end = '\n\n')
 
 			# empty reply list
 			replies = []
@@ -111,13 +114,6 @@ def video_comments(video_id):
 		else:
 			break
 
-# Enter video id
-video_id = "qZNRKB0uR5o"
-
-# Call function
-video_comments(video_id)
-
-
 if __name__ == "__main__":
-	youtube_search_keyword('Geeksforgeeks', max_results = 10)
+	youtube_search_keyword('education', max_results = 1)
 	
