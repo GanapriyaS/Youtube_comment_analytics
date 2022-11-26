@@ -1,5 +1,5 @@
 from google_trans import translate
-from prefect import flow
+from prefect import Flow,task
 import nltk
 import re
 # from nltk.corpus import stopwords
@@ -7,7 +7,7 @@ from textblob import TextBlob
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-
+from prefect.schedules import CronSchedule
 wl = WordNetLemmatizer()
 ps = PorterStemmer()
 
@@ -53,7 +53,7 @@ def connect_to_db():
 	cur = conn.cursor()
 	return cur, conn
 
-
+@task
 def youtube_title_description(video_ids):
 	for video_id in video_ids:
 		video_request=youtube_object.videos().list(
@@ -321,6 +321,9 @@ def video_comments(video_id):
 	final=[]
 	ids=[]
 
+	comments_all=[]
+	replies_all=[]
+
 	# iterate video response
 	while video_response:
 		for item in video_response['items']:
@@ -345,7 +348,7 @@ def video_comments(video_id):
 				ids.append(comment_id)
 				final.append(translate(soup.get_text('\n')))
 				conn.commit()
-			elif(diffretiation.total_seconds()//60<60):
+			elif(diffretiation.total_seconds()//60<3000):
 				query = f"""update public.comments set content='{comment}' where comment_id='{comment_id}'"""
 				cur.execute(query)
 				soup = BeautifulSoup(comment,features="html.parser")
@@ -358,6 +361,8 @@ def video_comments(video_id):
 			else:
 				print("comment not")
 
+			comments_all.append(comment_id)
+
 
 			# if reply is there
 			if replycount>0:
@@ -369,6 +374,7 @@ def video_comments(video_id):
 					# Store reply is list
 					
 					reply_id=reply['id']
+					replies_all.append(reply_id)
 					
 					reply_updated_at= reply['snippet']['updatedAt']
 					
@@ -382,7 +388,7 @@ def video_comments(video_id):
 						replies_id.append(reply_id)
 						replies.append(reply_content)
 						conn.commit()
-					elif(reply_diffretiation.total_seconds()//60<60):
+					elif(reply_diffretiation.total_seconds()//60<3000):
 						query = f"""update public.replies set content='{reply_content}' where reply_id='{reply_id}'"""
 						cur.execute(query)
 						conn.commit()
@@ -420,41 +426,80 @@ def video_comments(video_id):
 
 		cur.close()
 		conn.close()
-
-
-	video_embedded=word_embedding(final)
-	print(video_embedded,len(video_embedded))
-	y_pred_class,counts=model_predict(video_embedded)
-	total=np.sum(counts)
-	counts_perc=counts/total
-	print("counts: ",counts_perc)
-	print("rep_ids:",ids)
-
+	
 	cur,conn = connect_to_db()
-	for i in range(len(y_pred_class)):
-		
-		query = f"""update public.comments set value='{y_pred_class[i]}' where comment_id='{ids[i]}'"""
-		cur.execute(query)
-		conn.commit()
-		query = f"""update public.replies set value='{y_pred_class[i]}' where reply_id='{ids[i]}'"""
-		cur.execute(query)
-		conn.commit()
+	replies_all_df=pd.read_sql(f'''SELECT reply_id from public.replies where video_id='{video_id}' ''', con=conn)
+	replies_all_db = []
+	for i in replies_all_df['reply_id']:
+		replies_all_db.append(i)
+	print(replies_all_db)
 
-	replies_value=pd.read_sql(f'''SELECT value from public.replies where video_id='{video_id}' ''', con=conn)
-	comments_value=pd.read_sql(f'''SELECT value from public.comments where video_id='{video_id}' ''', con=conn)
-	final_data = pd.concat([replies_value, comments_value], axis=0).values.tolist()
-	print(final_data)
-	uniques, counts = np.unique(final_data, return_counts=True)
-	print(counts)
-	query = f"""update public.videos set extremely_happy='{counts[0]}', happy='{counts[1]}' , sad='{counts[3]}' ,neutral='{counts[2]}' ,angry='{counts[4]}' where video_id='{video_id}'"""
-	cur.execute(query)
-	conn.commit()
+
+	comments_all_df=pd.read_sql(f'''SELECT comment_id from public.comments where video_id='{video_id}' ''', con=conn)
+	comments_all_db = []
+	for i in comments_all_df['comment_id']:
+		comments_all_db.append(i)
+	print(comments_all_db)
+	
+
+	comments_all = list(set(comments_all_db).difference(set(comments_all)))
+	replies_all = list(set(replies_all_db).difference(set(replies_all)))
+	print(comments_all)
+	print(replies_all)
+
+
+	if(comments_all!=[]):
+		for i in comments_all:
+			query = f"""delete from public.comments where comment_id='{i}'"""
+			cur.execute(query)
+			conn.commit()
+	
+	if(replies_all!=[]):
+		for i in replies_all:
+			query = f"""delete from public.replies where reply_id='{i}'"""
+			cur.execute(query)
+			conn.commit()
 	
 	cur.close()
 	conn.close()
 	
+
+	if(final!=[] or ids!=[]):
+		video_embedded=word_embedding(final)
+		print(video_embedded,len(video_embedded))
+		y_pred_class,counts=model_predict(video_embedded)
+		total=np.sum(counts)
+		counts_perc=counts/total
+		print("counts: ",counts_perc)
+		print("rep_ids:",ids)
+
+		cur,conn = connect_to_db()
+		for i in range(len(y_pred_class)):
+			
+			query = f"""update public.comments set value='{y_pred_class[i]}' where comment_id='{ids[i]}'"""
+			cur.execute(query)
+			conn.commit()
+			query = f"""update public.replies set value='{y_pred_class[i]}' where reply_id='{ids[i]}'"""
+			cur.execute(query)
+			conn.commit()
+
+		replies_value=pd.read_sql(f'''SELECT value from public.replies where video_id='{video_id}' ''', con=conn)
+		comments_value=pd.read_sql(f'''SELECT value from public.comments where video_id='{video_id}' ''', con=conn)
+		final_data = pd.concat([replies_value, comments_value], axis=0).values.tolist()
+		print(final_data)
+		uniques, counts = np.unique(final_data, return_counts=True)
+		print(counts)
+		query = f"""update public.videos set extremely_happy='{counts[0]}', happy='{counts[1]}' , sad='{counts[3]}' ,neutral='{counts[2]}' ,angry='{counts[4]}' where video_id='{video_id}'"""
+		cur.execute(query)
+		conn.commit()
+		
+		cur.close()
+		conn.close()
 	
-@flow(name="task_automation")
-def task_automation():
+# scheduler = CronSchedule(cron='*/5  * * * *')
+scheduler = CronSchedule(cron='*/30 * * * *')
+
+with Flow("task_automation", schedule = scheduler) as flow:
 	youtube_title_description(video_ids)
-	
+
+flow.run()
