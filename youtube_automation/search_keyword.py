@@ -3,10 +3,10 @@ from bs4 import BeautifulSoup
 # Arguments that need to passed to the build function
 import os
 from dotenv import load_dotenv
-
+import pandas as pd
 dotenv_path = '.env'
 load_dotenv(dotenv_path)
-
+import pickle
 DEVELOPER_KEY = os.environ.get("API_KEY")
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
@@ -16,6 +16,7 @@ YOUTUBE_API_VERSION = "v3"
 youtube_object = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
 										developerKey = DEVELOPER_KEY)
 
+data_all=[]
 
 def youtube_search_keyword(query, max_results):
 	
@@ -38,7 +39,8 @@ def youtube_search_keyword(query, max_results):
 		# video result object
 		if result['id']['kind'] == "youtube#video":
 			videos.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"],result["id"]["videoId"], result['snippet']['description'],result['snippet']['thumbnails']['default']['url']))
-			video_comments(result["id"]["videoId"])
+			final=video_comments(result["id"]["videoId"])
+			data_all.append(final)
 			print("==========================")
             
             
@@ -64,6 +66,7 @@ def youtube_search_keyword(query, max_results):
 
 def video_comments(video_id):
 	# empty list for storing reply
+	final=[]
 	replies = []
 
 	# retrieve youtube video results
@@ -85,6 +88,7 @@ def video_comments(video_id):
 			
 			# counting number of reply of comment
 			replycount = item['snippet']['totalReplyCount']
+			print(video_id)
 
 			# if reply is there
 			if replycount>0:
@@ -94,9 +98,10 @@ def video_comments(video_id):
 					
 					# Extract reply
 					reply = reply['snippet']['textDisplay']
-					
+					print(video_id)
 					# Store reply is list
 					replies.append(reply)
+					final.append(reply)
 					# print(reply)
 
 			soup = BeautifulSoup(comment,features="html.parser")
@@ -104,6 +109,7 @@ def video_comments(video_id):
 			# print(soup.get_text('\n'), replies, end = '\n\n')
 
 			# empty reply list
+			final.append(comment)
 			replies = []
 
 		# Again repeat
@@ -115,7 +121,22 @@ def video_comments(video_id):
 				).execute()
 		else:
 			break
+	
+	return final
 
 if __name__ == "__main__":
-	youtube_search_keyword('BE Computer Science', max_results = 7)
+	l=["BE Computer Science","Gate Aspirants","GCT Coimbatore"]
+	for i in l:
+		print(l)
+		youtube_search_keyword(i, max_results = 50)
+
+	with open('data_final.pickle', 'wb') as f:
+		pickle.dump(data_all, f, pickle.HIGHEST_PROTOCOL)
+
+	with open('data_final.pickle', 'rb') as handle:
+		tokenizer = pickle.load(handle)
+	
+	print(tokenizer)
+	# df = pd.DataFrame (data_all, columns = ['text'])
+	# df.to_csv('data_final.csv')
 	

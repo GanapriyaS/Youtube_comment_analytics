@@ -348,7 +348,7 @@ def video_comments(video_id):
 				ids.append(comment_id)
 				final.append(translate(soup.get_text('\n')))
 				conn.commit()
-			elif(diffretiation.total_seconds()//60<3000):
+			elif(diffretiation.total_seconds()//60<30):
 				query = f"""update public.comments set content='{comment}' where comment_id='{comment_id}'"""
 				cur.execute(query)
 				soup = BeautifulSoup(comment,features="html.parser")
@@ -388,7 +388,7 @@ def video_comments(video_id):
 						replies_id.append(reply_id)
 						replies.append(reply_content)
 						conn.commit()
-					elif(reply_diffretiation.total_seconds()//60<3000):
+					elif(reply_diffretiation.total_seconds()//60<30):
 						query = f"""update public.replies set content='{reply_content}' where reply_id='{reply_id}'"""
 						cur.execute(query)
 						conn.commit()
