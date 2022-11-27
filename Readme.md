@@ -52,3 +52,27 @@ C:\Users\ganap\.conda\envs\intern_dicom
 - What is the Difference Between B.E and B.Tech(Mechanical, Computer Science, Electrical, Civil) Hindi (hKrAoh5Ayhg) (What is the Difference Between BE and BTech(Mechanical, Computer Science, Electrical, Civil) Hindi, in this video I am going to ...) (https://i.ytimg.com/vi/hKrAoh5Ayhg/default.jpg)
 
 - Bachelor of Engineering(BE) Computer Engineer : Course Details, Fees, Placement, Subjects, Job Roles (Z7btuaEWjOQ) (Computer Engineering in BE is one of the best Engineering branch. Computer Engineering course details, placement, subjects ...) (https://i.ytimg.com/vi/Z7btuaEWjOQ/default.jpg)    
+
+```
+amazing
+best
+competition
+good
+happy
+thumbsup
+tq
+help me a  lot
+helpful
+like you
+lonely
+love you, support, very much
+motivated,important
+neutral
+que
+right
+superb
+supper
+tqq
+tqs
+want
+```

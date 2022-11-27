@@ -26,6 +26,7 @@ def youtube_search_keyword(query, max_results):
 	
 	# extracting the results from search response
 	results = search_keyword.get("items", [])
+	
 
 
 	# empty list to store video,
@@ -37,12 +38,13 @@ def youtube_search_keyword(query, max_results):
 	# extracting required info from each result object
 	for result in results:
 		# video result object
+
 		if result['id']['kind'] == "youtube#video":
 			videos.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"],result["id"]["videoId"], result['snippet']['description'],result['snippet']['thumbnails']['default']['url']))
 			final=video_comments(result["id"]["videoId"])
 			data_all.append(final)
 			print("==========================")
-            
+			
             
             
 # 		# playlist result object
@@ -68,12 +70,16 @@ def video_comments(video_id):
 	# empty list for storing reply
 	final=[]
 	replies = []
+	try:
+		video_response=youtube_object.commentThreads().list(
+		part='snippet,replies',
+		videoId=video_id
+		).execute()
+	except:
+		return []
+	
 
-	# retrieve youtube video results
-	video_response=youtube_object.commentThreads().list(
-	part='snippet,replies',
-	videoId=video_id
-	).execute()
+	print(video_response)
 
 	# iterate video response
 	while video_response:
@@ -139,4 +145,15 @@ if __name__ == "__main__":
 	print(tokenizer)
 	# df = pd.DataFrame (data_all, columns = ['text'])
 	# df.to_csv('data_final.csv')
+
+	print(len(tokenizer))
+	count=0
+	final=[]
+	for i in tokenizer:
+		count=count+len(i)
+		final.extend(i)
+	print(count)
+
+	df = pd.DataFrame (final, columns = ['text'])
+	df.to_csv('data.csv')
 	
