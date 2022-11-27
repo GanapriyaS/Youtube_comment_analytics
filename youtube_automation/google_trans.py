@@ -1,5 +1,5 @@
 from googletrans import Translator
-translator = Translator()
+
 
 # text = 'seekiram sollu'
 # text = 'neenga sanda podum pothum nee alaga irukinga'
@@ -17,6 +17,7 @@ text="I've good"
 # Detecting the language
 
 def translate(text):
+    translator = Translator()
     print(translator.detect(text))
     result = translator.translate(text).text
 

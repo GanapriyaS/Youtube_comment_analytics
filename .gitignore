@@ -12,3 +12,6 @@ tokenizer.pickle
 db_data
 pgadmin-data
 output
+glove.6B.200d.txt
+log_history.pickle
+comment_analysis.h5
